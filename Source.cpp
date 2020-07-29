@@ -29,8 +29,8 @@ public:
 	unsigned int VAO;
 
 	Triangle(float x1, float y1, float z1,	 //left
-		float x2, float y2, float z2,	 //right
-		float x3, float y3, float z3) { //top
+		float x2, float y2, float z2,		 //right
+		float x3, float y3, float z3) {		 //top
 		vertices[0] = x1;
 		vertices[1] = y1;
 		vertices[2] = z1;
@@ -78,7 +78,7 @@ public:
 		}
 
 		//create shader program
-		//unsigned int shaderProgram;
+		unsigned int shaderProgram;
 		shaderProgram = glCreateProgram();
 		//link shaders to this shader program
 		glAttachShader(shaderProgram, vertexShader);
@@ -90,18 +90,24 @@ public:
 		glDeleteShader(fragmentShader);
 
 		//generate VAO (vertex array object)
-		//unsigned int VAO;
 		glGenVertexArrays(1, &VAO);
 
-		// Initialization code (done once (unless your object frequently changes))
+		// Initialization code
 		// 1. bind Vertex Array Object
 		glBindVertexArray(VAO);
-		// 2. copy our vertices array in a buffer for OpenGL to use
+		// 2. copy vertices array in a buffer for OpenGL to use
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(this->vertices), this->vertices, GL_STATIC_DRAW);
 		// 3. then set our vertex attributes pointers
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);	(uncomment for wire frame mode)
+	}
+
+	void drawTriangle() {
+		glUseProgram(this->shaderProgram);
+		glBindVertexArray(this->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}
 };
 
@@ -136,19 +142,19 @@ int main() {
 	//set viewport
 	glViewport(0, 0, horizontalSize, verticalSize);
 
-	//set verticies of the triangle
+	//set verticies of the triangles
 	Triangle triangle1(-0.25, 0.0, 0.0,
-						0.25, 0.0, 0.0,
-						0.0, 0.5, 0.0);
-	triangle1.prepareToDraw();
+		0.25, 0.0, 0.0,
+		0.0, 0.5, 0.0);
 	Triangle triangle2(-0.5, -0.5, 0.0,
 		0.0, -0.5, 0.0,
 		-0.25, 0.0, 0.0);
+	Triangle triangle3(0.0, -0.5, 0.0,
+		0.5, -0.5, 0.0,
+		0.25, 0.0, 0.0);
+	triangle1.prepareToDraw();
 	triangle2.prepareToDraw();
-
-	
-	
-
+	triangle3.prepareToDraw();
 
 	//render loop
 	int i = 0;
@@ -156,17 +162,16 @@ int main() {
 		processInput(window);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		//clear the colors
+		glClearColor(0.3f, 0.3f, 0.3f, 0.3f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		cout << "rendering frame " << i << endl;
 		i++;
-		// ..:: Drawing code (in render loop)
-		// 4. draw the object
-		glUseProgram(triangle1.shaderProgram);
-		glBindVertexArray(triangle1.VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//draw second triangle
-		glUseProgram(triangle2.shaderProgram);
-		glBindVertexArray(triangle2.VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// 4. draw the objects
+		triangle1.drawTriangle();
+		triangle2.drawTriangle();
+		triangle3.drawTriangle();
 	}
 
 	glfwTerminate(); //terminate and clear glfw resources
