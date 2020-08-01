@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -28,9 +29,9 @@ public:
 	unsigned int shaderProgram;
 	unsigned int VAO;
 
-	Triangle(float x1, float y1, float z1,	 //left
-		float x2, float y2, float z2,		 //right
-		float x3, float y3, float z3) {		 //top
+	Triangle(float x1, float y1, float z1,		//left
+		float x2,float y2, float z2,			//right
+		float x3, float y3, float z3) {			//top
 		vertices[0] = x1;
 		vertices[1] = y1;
 		vertices[2] = z1;
