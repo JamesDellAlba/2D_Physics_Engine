@@ -22,16 +22,16 @@ const char *fragmentShaderSource = "#version 330 core\n"
 "uniform vec4 ourColor;\n"
 "void main()\n"
 "{\n"
-"FragColor = vertexColor;\n"
-"}\n";
+"	FragColor = ourColor;\n"
+"}\n\0";
 
 int main() {
 	
+	//initialize and configure glfw
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_RESIZABLE, true);
 
 	int horizontalSize = 1080;
@@ -62,8 +62,6 @@ int main() {
 		0.5f, -0.5f, 0.0f,
 		0.0f,  0.5f, 0.0f
 	};
-	unsigned int VBO;
-	glGenBuffers(1, &VBO); //generate a buffer with an ID
 
 	//create a shader object (referenced by an ID)
 	unsigned int vertexShader;
@@ -108,9 +106,11 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-	//generate VAO (vertex array object)
+	//generate VAO (vertex array object) and VBO (vertex buffer object)
 	unsigned int VAO;
+	unsigned int VBO;
 	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
 
 	// ..:: Initialization code (done once (unless your object frequently changes)) :: ..
 	// 1. bind Vertex Array Object
@@ -122,36 +122,32 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-
 	//render loop
 	int i = 0;
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		
 		cout << "rendering frame " << i << endl;
-		i++;
-		//clear buffer bits
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		i++; //count each frame
 
-		// ..:: Drawing code (in render loop) :: ..
-		// 4. draw the object
+		// --- Drawing code (in render loop) ---
 		glUseProgram(shaderProgram);
-
-		//vary the color with time
-		/*float timeValue = glfwGetTime();
+		//shift colors
+		float timeValue = glfwGetTime();
 		float greenValue = sin(timeValue) / 2.0f + 0.5f;
 		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);*/
-
-		glBindVertexArray(VAO);
+		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		//swap buffers
+		//swap buffers and poll I/O events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	//delete resources
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(shaderProgram);
 
 	glfwTerminate(); //terminate and clear glfw resources
 	return 0;
