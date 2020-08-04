@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "shader.h"
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -35,8 +37,8 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, true);
 
-	int horizontalSize = 1080;
-	int verticalSize = 720;
+	int horizontalSize = 1220;
+	int verticalSize = 920;
 
 	//create window object
 	GLFWwindow* window = glfwCreateWindow(horizontalSize, verticalSize, "Test Window", NULL, NULL);
@@ -69,44 +71,7 @@ int main() {
 	unsigned int vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	//compile the shader source code
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	//check for compile time errors
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success) //print compile time errors
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	//compile fragment shader source code
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	//check for compile time errors
-	int fragmentShaderSuccess;
-	char infoLogFragment[512];
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentShaderSuccess);
-	if (!fragmentShaderSuccess) //print compile time errors
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLogFragment);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLogFragment << std::endl;
-	}
-
-	//create shader program
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	//link shaders to this shader program
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	glUseProgram(shaderProgram);
-	//delete shader objects (now unused)
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	Shader ourShader("vertexShader.txt", "fragmentShader.txt");
 
 	//generate VAO (vertex array object) and VBO (vertex buffer object)
 	unsigned int VAO;
@@ -137,12 +102,11 @@ int main() {
 		//i++; //count each frame
 
 		// --- Drawing code (in render loop) ---
-		glUseProgram(shaderProgram);
-		//shift colors
-		float timeValue = glfwGetTime();
-		float greenValue = sin(timeValue) / 2.0f + 0.5f;
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		ourShader.use();
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		//swap buffers and poll I/O events
@@ -153,8 +117,6 @@ int main() {
 	//delete resources
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
-
 	glfwTerminate(); //terminate and clear glfw resources
 	return 0;
 }
